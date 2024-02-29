@@ -16,6 +16,7 @@ class MainActivity : AppCompatActivity() {
         ViewModelProvider(this)[MainViewModel::class.java]
     }
     private lateinit var rainbowZone: RainbowZone
+    private var startButton: AppCompatButton? = null
     var previousTextColor = 0
     private var isShowingImage = false
     var textColor: Int? = null
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         val doBigger = findViewById<SeekBar>(R.id.doBiggerSeekBar)
         rainbowZone = findViewById(R.id.rainbowZone)
         val resetButton = findViewById<AppCompatButton>(R.id.resetButton)
+        startButton = findViewById(R.id.startButton)
         doBigger.progress = 50
         doBigger.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -44,16 +46,25 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
         rainbowZone.rainbowWheel.setOnClickListener {
-            val animator = createAnimation()
-            rainbowZone.rainbowWheel.rotation = 0F
-            mainViewModel.rainbowWheelClicked(animator)
-            mainViewModel.isWorking = true
-            mainViewModel.finished.observe(this) {
-                endOfSpin()
-            }
+            startSpin()
+        }
+        startButton!!.setOnClickListener {
+            startSpin()
         }
         resetButton.setOnClickListener {
             resetRainbowZone()
+        }
+    }
+
+    private fun startSpin() {
+        val animator = createAnimation()
+        rainbowZone.rainbowWheel.rotation = 0F
+        mainViewModel.rainbowWheelClicked(animator)
+        mainViewModel.isWorking = true
+        rainbowZone.rainbowWheel.isClickable = false
+        startButton!!.isClickable = false
+        mainViewModel.finished.observe(this) {
+            endOfSpin()
         }
     }
 
@@ -105,6 +116,8 @@ class MainActivity : AppCompatActivity() {
             showText()
         }
         mainViewModel.finished.removeObservers(this)
+        rainbowZone.rainbowWheel.isClickable = true
+        startButton!!.isClickable = true
     }
 
     private fun showText() {
